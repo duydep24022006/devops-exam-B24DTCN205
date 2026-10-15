@@ -28,21 +28,46 @@ jobs:
       - name: Checkout mã nguồn
         uses: actions/checkout@v4
 
-      - name: Kiểm tra thông tin trong student.env
+      - name: Tạo student.env cho CI
+        env:
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
         run: |
-          set -a; source student.env; set +a
-          for v in STUDENT_NAME STUDENT_ID STUDENT_CLASS STUDENT_EMAIL GITHUB_USERNAME \
-                   APP_PORT COMPOSE_PROJECT_NAME MYSQL_USER MYSQL_PASSWORD MYSQL_ROOT_PASSWORD; do
+          {
+            echo 'STUDENT_NAME="Le Ba Duy"'
+            echo 'STUDENT_ID="B24DTCN205"'
+            echo 'STUDENT_CLASS="K24CNTT4"'
+            echo 'STUDENT_EMAIL="student@example.com"'
+            echo 'GITHUB_USERNAME="duydep24022006"'
+            echo 'EXAM_CODE="001"'
+            echo 'APP_PORT="8081"'
+            echo 'COMPOSE_PROJECT_NAME="duydep24022006-de001"'
+            echo 'MYSQL_DATABASE="ptit_lab_db"'
+            echo 'MYSQL_USER="app_user"'
+            printf 'MYSQL_PASSWORD=%s\n' "$MYSQL_PASSWORD"
+            printf 'MYSQL_ROOT_PASSWORD=%s\n' "$MYSQL_ROOT_PASSWORD"
+          } > student.env
+          chmod 600 student.env
+
+      - name: Kiểm tra thông tin sinh viên
+        run: |
+          set -a
+          source student.env
+          set +a
+
+          for v in STUDENT_NAME STUDENT_ID STUDENT_CLASS STUDENT_EMAIL GITHUB_USERNAME APP_PORT COMPOSE_PROJECT_NAME MYSQL_DATABASE MYSQL_USER MYSQL_PASSWORD MYSQL_ROOT_PASSWORD; do
             if [ -z "${!v}" ]; then
-              echo "::error file=student.env::Chưa điền $v trong student.env"
+              echo "::error::Thieu bien $v trong student.env"
               exit 1
             fi
           done
+
           if [ "$APP_PORT" -lt 8080 ]; then
-            echo "::error file=student.env::APP_PORT phải từ 8080 trở lên"
+            echo "::error::APP_PORT phai tu 8080 tro len"
             exit 1
           fi
-          echo "### Sinh viên: $STUDENT_NAME - $STUDENT_ID - $STUDENT_CLASS" >> "$GITHUB_STEP_SUMMARY"
+
+          echo "Kiem tra student.env thanh cong"
 
       - name: Đặt tên image
         id: meta
@@ -63,6 +88,7 @@ jobs:
           BASE="http://localhost:${APP_PORT}"
           # Kiểm tra endpoint $BASE/api/labs trả về JSON (CÓ SẴN, lỗi -> pipeline FAIL)
           curl -fsS --retry 12 --retry-delay 5 --retry-all-errors "$BASE/api/labs" | grep -q '"id"'
+          test "$(curl -fsS --retry 12 --retry-delay 5 --retry-all-errors "$BASE/api/employees/count")" = "5"
           echo "Smoke test OK"
 
       - name: In log khi lỗi
