@@ -26,3 +26,15 @@ INSERT INTO labs (lab_name, building, capacity, equipment, status) VALUES
     ('Security Lab', 'A3', 20, 'Firewall FortiGate 60F', 'Tạm đóng'),
     ('Mobile Lab', 'B1', 45, 'MacBook Pro, iPhone 15', 'Hoạt động'),
     ('Data Lab', 'B1', 40, 'Máy trạm HP Z4', 'Hoạt động');
+
+CREATE TABLE IF NOT EXISTS employees (
+                                         id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                                         name VARCHAR(100) NOT NULL
+    );
+
+INSERT INTO employees (name) VALUES
+                                 ('Nguyen Van A'),
+                                 ('Tran Thi B'),
+                                 ('Le Van C'),
+                                 ('Pham Van D'),
+                                 ('Hoang Van E');
