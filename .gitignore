@@ -1,0 +1,5 @@
+﻿student.env
+.gradle/
+build/
+.idea/
+*.iml
